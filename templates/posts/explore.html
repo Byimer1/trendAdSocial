@@ -1,0 +1,84 @@
+{% extends 'base/base.html' %}
+{% load static %}
+
+{% block title %}Explore - {{ block.super }}{% endblock %}
+
+{% block content %}
+<div class="container">
+    <div class="row">
+        <div class="col-12">
+            {% if posts %}
+                <div class="row g-4">
+                    {% for post in posts %}
+                        <div class="col-4">
+                            <div class="position-relative">
+                                <a href="{% url 'posts:post_detail' post.id %}" class="d-block">
+                                    <img src="{{ post.image.url }}" class="img-fluid" alt="Post image">
+                                    <div class="hover-overlay position-absolute top-0 start-0 w-100 h-100 bg-dark bg-opacity-50 d-flex align-items-center justify-content-center text-white opacity-0">
+                                        <div class="text-center">
+                                            <div class="mb-2">
+                                                <i class="fas fa-heart"></i>
+                                                <span>{{ post.likes.count }}</span>
+                                            </div>
+                                            <div>
+                                                <i class="fas fa-comment"></i>
+                                                <span>{{ post.comments.count }}</span>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </a>
+                            </div>
+                        </div>
+                    {% endfor %}
+                </div>
+                
+                {% if is_paginated %}
+                    <nav aria-label="Page navigation" class="my-4">
+                        <ul class="pagination justify-content-center">
+                            {% if page_obj.has_previous %}
+                                <li class="page-item">
+                                    <a class="page-link" href="?page={{ page_obj.previous_page_number }}">Previous</a>
+                                </li>
+                            {% endif %}
+                            
+                            {% for num in page_obj.paginator.page_range %}
+                                {% if page_obj.number == num %}
+                                    <li class="page-item active">
+                                        <span class="page-link">{{ num }}</span>
+                                    </li>
+                                {% else %}
+                                    <li class="page-item">
+                                        <a class="page-link" href="?page={{ num }}">{{ num }}</a>
+                                    </li>
+                                {% endif %}
+                            {% endfor %}
+                            
+                            {% if page_obj.has_next %}
+                                <li class="page-item">
+                                    <a class="page-link" href="?page={{ page_obj.next_page_number }}">Next</a>
+                                </li>
+                            {% endif %}
+                        </ul>
+                    </nav>
+                {% endif %}
+            {% else %}
+                <div class="text-center my-5">
+                    <h5>No posts to explore yet.</h5>
+                    <p class="text-muted">Be the first to share a post!</p>
+                    <a href="{% url 'posts:create_post' %}" class="btn btn-primary">Create Post</a>
+                </div>
+            {% endif %}
+        </div>
+    </div>
+</div>
+
+<style>
+.hover-overlay {
+    transition: opacity 0.3s ease;
+}
+
+.position-relative:hover .hover-overlay {
+    opacity: 1 !important;
+}
+</style>
+{% endblock %} 

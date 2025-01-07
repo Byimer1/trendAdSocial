@@ -1,0 +1,78 @@
+{% extends 'base/base.html' %}
+{% load static %}
+
+{% block title %}Messages - {{ block.super }}{% endblock %}
+
+{% block content %}
+<div class="container">
+    <div class="row">
+        <!-- Messages List -->
+        <div class="col-md-4">
+            <div class="card">
+                <div class="card-header d-flex justify-content-between align-items-center">
+                    <h5 class="mb-0">Messages</h5>
+                    <a href="{% url 'direct_messages:new_conversation' %}" class="btn btn-primary btn-sm">
+                        <i class="fas fa-plus"></i> New Message
+                    </a>
+                </div>
+                <div class="list-group list-group-flush">
+                    {% if conversations %}
+                        {% for conversation in conversations %}
+                            {% with conversation.other_participant as other_user %}
+                            <a href="{% url 'direct_messages:conversation_detail' conversation.id %}" 
+                               class="list-group-item list-group-item-action {% if conversation.unread_count %}fw-bold{% endif %}">
+                                <div class="d-flex justify-content-between align-items-center">
+                                    <div class="d-flex align-items-center">
+                                        {% if other_user.avatar %}
+                                            <img src="{{ other_user.avatar.url }}" 
+                                                 alt="{{ other_user.username }}" 
+                                                 class="rounded-circle me-2"
+                                                 style="width: 40px; height: 40px; object-fit: cover;">
+                                        {% else %}
+                                            <img src="{% static 'img/default-avatar.svg' %}" 
+                                                 alt="{{ other_user.username }}" 
+                                                 class="rounded-circle me-2"
+                                                 style="width: 40px; height: 40px; object-fit: cover;">
+                                        {% endif %}
+                                        <div>
+                                            <h6 class="mb-0">{{ other_user.username }}</h6>
+                                            <small class="text-muted">
+                                                {% if conversation.last_message_content %}
+                                                    {{ conversation.last_message_content|truncatechars:30 }}
+                                                {% else %}
+                                                    No messages yet
+                                                {% endif %}
+                                            </small>
+                                        </div>
+                                    </div>
+                                    {% if conversation.unread_count %}
+                                        <span class="badge bg-primary rounded-pill">{{ conversation.unread_count }}</span>
+                                    {% endif %}
+                                </div>
+                            </a>
+                            {% endwith %}
+                        {% endfor %}
+                    {% else %}
+                        <div class="list-group-item text-center text-muted">
+                            <p class="mb-0">No conversations yet</p>
+                            <small>Start a new conversation!</small>
+                        </div>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+        
+        <!-- Welcome Message -->
+        <div class="col-md-8 d-none d-md-block">
+            <div class="text-center my-5">
+                <i class="fas fa-comments fa-4x text-muted mb-3"></i>
+                <h4>Your Messages</h4>
+                <p class="text-muted">Send private messages to other users</p>
+                <a href="{% url 'direct_messages:new_conversation' %}" class="btn btn-primary">
+                    Start a Conversation
+                </a>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %} 

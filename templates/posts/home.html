@@ -1,0 +1,362 @@
+{% extends 'base/base.html' %}
+{% load static %}
+
+{% block title %}Home - {{ block.super }}{% endblock %}
+
+{% block content %}
+<div class="container">
+    <div class="row">
+        <!-- Main Content -->
+        <div class="col-lg-8">
+            {% if user.is_authenticated %}
+                <!-- Tab Navigation -->
+                <ul class="nav nav-tabs mb-4">
+                    <li class="nav-item">
+                        <a class="nav-link {% if not show_news %}active{% endif %}" href="{% url 'posts:home' %}">
+                            <i class="bi bi-grid"></i> Posts
+                        </a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link {% if show_news %}active{% endif %}" href="{% url 'news:list' %}">
+                            <i class="bi bi-newspaper"></i> News
+                        </a>
+                    </li>
+                </ul>
+
+                {% if not show_news %}
+                    {% if posts %}
+                        {% for post in posts %}
+                            <div class="card mb-4">
+                                <!-- Post Header -->
+                                <div class="card-header bg-white">
+                                    <div class="d-flex align-items-center">
+                                        <a href="{% url 'users:profile' post.user.username %}" class="text-decoration-none">
+                                            {% if post.user.profile.avatar %}
+                                                <img src="{{ post.user.profile.avatar.url }}" 
+                                                     alt="{{ post.user.username }}" 
+                                                     class="rounded-circle me-2"
+                                                     width="32" height="32">
+                                            {% else %}
+                                                <img src="{% static 'img/default-avatar.svg' %}" 
+                                                     alt="{{ post.user.username }}" 
+                                                     class="rounded-circle me-2"
+                                                     width="32" height="32">
+                                            {% endif %}
+                                        </a>
+                                        <div>
+                                            <a href="{% url 'users:profile' post.user.username %}" class="text-dark text-decoration-none fw-bold">
+                                                {{ post.user.username }}
+                                            </a>
+                                            {% if post.location %}
+                                                <div class="text-muted small">{{ post.location }}</div>
+                                            {% endif %}
+                                        </div>
+                                        {% if post.user == user %}
+                                            <div class="dropdown ms-auto">
+                                                <button class="btn btn-link text-dark text-decoration-none" data-bs-toggle="dropdown">
+                                                    <i class="fas fa-ellipsis-h"></i>
+                                                </button>
+                                                <ul class="dropdown-menu dropdown-menu-end">
+                                                    <li>
+                                                        <a class="dropdown-item" href="{% url 'posts:edit_post' post.id %}">
+                                                            <i class="fas fa-edit"></i> Edit
+                                                        </a>
+                                                    </li>
+                                                    <li>
+                                                        <form action="{% url 'posts:delete_post' post.id %}" method="post" class="d-inline">
+                                                            {% csrf_token %}
+                                                            <button type="submit" class="dropdown-item text-danger">
+                                                                <i class="fas fa-trash"></i> Delete
+                                                            </button>
+                                                        </form>
+                                                    </li>
+                                                </ul>
+                                            </div>
+                                        {% endif %}
+                                    </div>
+                                </div>
+                                
+                                <!-- Post Image -->
+                                <a href="{% url 'posts:post_detail' post.id %}">
+                                    <img src="{{ post.image.url }}" class="card-img-top" alt="Post image">
+                                </a>
+                                
+                                <!-- Post Actions -->
+                                <div class="card-body">
+                                    <div class="d-flex mb-3">
+                                        <div>
+                                            <button type="button" class="btn btn-link text-dark text-decoration-none p-0 like-button" data-post-id="{{ post.id }}">
+                                                {% if user in post.likes.all %}
+                                                    <i class="fas fa-heart text-danger"></i>
+                                                {% else %}
+                                                    <i class="far fa-heart"></i>
+                                                {% endif %}
+                                            </button>
+                                            <a href="{% url 'posts:post_detail' post.id %}" class="btn btn-link text-dark text-decoration-none">
+                                                <i class="far fa-comment"></i>
+                                            </a>
+                                        </div>
+                                        <form action="{% url 'posts:save_post' post.id %}" method="post" class="ms-auto">
+                                            {% csrf_token %}
+                                            <button type="submit" class="btn btn-link text-dark text-decoration-none p-0">
+                                                {% if user in post.saved_by.all %}
+                                                    <i class="fas fa-bookmark"></i>
+                                                {% else %}
+                                                    <i class="far fa-bookmark"></i>
+                                                {% endif %}
+                                            </button>
+                                        </form>
+                                    </div>
+                                    
+                                    <!-- Likes -->
+                                    {% if post.likes.count > 0 %}
+                                        <p class="mb-1 fw-bold">{{ post.likes.count }} like{{ post.likes.count|pluralize }}</p>
+                                    {% endif %}
+                                    
+                                    <!-- Caption -->
+                                    {% if post.caption %}
+                                        <p class="mb-1">
+                                            <a href="{% url 'users:profile' post.user.username %}" class="text-dark text-decoration-none fw-bold">
+                                                {{ post.user.username }}
+                                            </a>
+                                            {{ post.caption }}
+                                        </p>
+                                    {% endif %}
+                                    
+                                    <!-- Comments -->
+                                    {% if post.comments.count > 0 %}
+                                        <a href="{% url 'posts:post_detail' post.id %}" class="text-muted text-decoration-none">
+                                            View all {{ post.comments.count }} comment{{ post.comments.count|pluralize }}
+                                        </a>
+                                    {% endif %}
+                                    
+                                    <!-- Timestamp -->
+                                    <p class="text-muted small mt-2 mb-0">{{ post.created_at|timesince }} ago</p>
+                                    
+                                    <!-- Comment Form -->
+                                    <form class="comment-form mt-3" data-post-id="{{ post.id }}">
+                                        {% csrf_token %}
+                                        <div class="input-group">
+                                            <input type="text" name="text" class="form-control" placeholder="Add a comment..." required>
+                                            <button type="submit" class="btn btn-link text-primary text-decoration-none">Post</button>
+                                        </div>
+                                    </form>
+                                </div>
+                            </div>
+                        {% endfor %}
+                        
+                        <!-- Pagination -->
+                        {% if is_paginated %}
+                            <nav aria-label="Page navigation" class="my-4">
+                                <ul class="pagination justify-content-center">
+                                    {% if page_obj.has_previous %}
+                                        <li class="page-item">
+                                            <a class="page-link" href="?page={{ page_obj.previous_page_number }}">Previous</a>
+                                        </li>
+                                    {% endif %}
+                                    
+                                    {% for num in page_obj.paginator.page_range %}
+                                        {% if page_obj.number == num %}
+                                            <li class="page-item active">
+                                                <span class="page-link">{{ num }}</span>
+                                            </li>
+                                        {% else %}
+                                            <li class="page-item">
+                                                <a class="page-link" href="?page={{ num }}">{{ num }}</a>
+                                            </li>
+                                        {% endif %}
+                                    {% endfor %}
+                                    
+                                    {% if page_obj.has_next %}
+                                        <li class="page-item">
+                                            <a class="page-link" href="?page={{ page_obj.next_page_number }}">Next</a>
+                                        </li>
+                                    {% endif %}
+                                </ul>
+                            </nav>
+                        {% endif %}
+                    {% else %}
+                        <div class="text-center my-5">
+                            <h2>Welcome to TrendAd Social!</h2>
+                            <p class="text-muted">
+                                Follow other users to see their posts here, or explore to find new content.
+                            </p>
+                            <a href="{% url 'posts:explore' %}" class="btn btn-primary">Explore</a>
+                        </div>
+                    {% endif %}
+                {% endif %}
+            {% endif %}
+        </div>
+        
+        <!-- Sidebar -->
+        <div class="col-lg-4 d-none d-lg-block">
+            <div class="position-sticky" style="top: 5rem;">
+                <!-- User Card -->
+                <div class="card mb-3">
+                    <div class="card-body">
+                        <div class="d-flex align-items-center">
+                            <a href="{% url 'users:profile' user.username %}" class="text-decoration-none">
+                                {% if user.profile.avatar %}
+                                    <img src="{{ user.profile.avatar.url }}" 
+                                         alt="{{ user.username }}" 
+                                         class="rounded-circle me-3"
+                                         width="56" height="56">
+                                {% else %}
+                                    <img src="{% static 'img/default-avatar.svg' %}" 
+                                         alt="{{ user.username }}" 
+                                         class="rounded-circle me-3"
+                                         width="56" height="56">
+                                {% endif %}
+                            </a>
+                            <div>
+                                <a href="{% url 'users:profile' user.username %}" class="text-dark text-decoration-none fw-bold">
+                                    {{ user.username }}
+                                </a>
+                                <div class="text-muted">{{ user.full_name }}</div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- Suggestions -->
+                {% if suggestions %}
+                    <div class="card">
+                        <div class="card-header bg-white">
+                            <h6 class="mb-0">Suggestions For You</h6>
+                        </div>
+                        <div class="list-group list-group-flush">
+                            {% for suggested_user in suggestions %}
+                                <div class="list-group-item">
+                                    <div class="d-flex align-items-center">
+                                        <a href="{% url 'users:profile' suggested_user.username %}" class="text-decoration-none">
+                                            {% if suggested_user.profile.avatar %}
+                                                <img src="{{ suggested_user.profile.avatar.url }}" 
+                                                     alt="{{ suggested_user.username }}" 
+                                                     class="rounded-circle me-3"
+                                                     width="32" height="32">
+                                            {% else %}
+                                                <img src="{% static 'img/default-avatar.svg' %}" 
+                                                     alt="{{ suggested_user.username }}" 
+                                                     class="rounded-circle me-3"
+                                                     width="32" height="32">
+                                            {% endif %}
+                                        </a>
+                                        <div class="flex-grow-1">
+                                            <a href="{% url 'users:profile' suggested_user.username %}" class="text-dark text-decoration-none fw-bold">
+                                                {{ suggested_user.username }}
+                                            </a>
+                                            <div class="text-muted small">{{ suggested_user.full_name }}</div>
+                                        </div>
+                                        <form action="{% url 'users:follow' suggested_user.id %}" method="post">
+                                            {% csrf_token %}
+                                            <button type="submit" class="btn btn-link text-primary text-decoration-none">Follow</button>
+                                        </form>
+                                    </div>
+                                </div>
+                            {% endfor %}
+                        </div>
+                    </div>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    // Like functionality
+    document.querySelectorAll('.like-button').forEach(button => {
+        button.addEventListener('click', function(e) {
+            e.preventDefault();
+            const postId = this.dataset.postId;
+            const icon = this.querySelector('i');
+            const likesCountElement = this.closest('.card-body').querySelector('.likes-count');
+            
+            fetch(`/${postId}/like/`, {
+                method: 'POST',
+                headers: {
+                    'X-CSRFToken': document.querySelector('[name=csrfmiddlewaretoken]').value,
+                    'Content-Type': 'application/json'
+                }
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.liked) {
+                    icon.classList.remove('far');
+                    icon.classList.add('fas', 'text-danger');
+                } else {
+                    icon.classList.remove('fas', 'text-danger');
+                    icon.classList.add('far');
+                }
+                if (likesCountElement) {
+                    likesCountElement.textContent = `${data.likes_count} like${data.likes_count !== 1 ? 's' : ''}`;
+                }
+            })
+            .catch(error => console.error('Error:', error));
+        });
+    });
+
+    // Comment functionality
+    document.querySelectorAll('.comment-form').forEach(form => {
+        form.addEventListener('submit', function(e) {
+            e.preventDefault();
+            const postId = this.dataset.postId;
+            const input = this.querySelector('input[name="text"]');
+            const commentText = input.value;
+            const commentsCountElement = this.closest('.card-body').querySelector('a[href*="post_detail"]');
+            
+            fetch(`/${postId}/comment/`, {
+                method: 'POST',
+                headers: {
+                    'X-CSRFToken': document.querySelector('[name=csrfmiddlewaretoken]').value,
+                },
+                body: new FormData(this)
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.success) {
+                    // Clear input
+                    input.value = '';
+                    
+                    // Update comments count
+                    if (commentsCountElement) {
+                        const count = parseInt(data.comments_count);
+                        commentsCountElement.textContent = `View all ${count} comment${count !== 1 ? 's' : ''}`;
+                    }
+                }
+            })
+            .catch(error => console.error('Error:', error));
+        });
+    });
+
+    // Delete comment functionality
+    document.querySelectorAll('.delete-comment').forEach(button => {
+        button.addEventListener('click', function() {
+            const commentId = this.dataset.commentId;
+            
+            fetch(`/comment/${commentId}/delete/`, {
+                method: 'POST',
+                headers: {
+                    'X-CSRFToken': document.querySelector('[name=csrfmiddlewaretoken]').value,
+                },
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.status === 'success') {
+                    const comment = document.getElementById(`comment-${commentId}`);
+                    comment.remove();
+                    
+                    // Update comment count
+                    const countElement = document.querySelector('.comments-count');
+                    if (countElement) {
+                        countElement.textContent = parseInt(countElement.textContent) - 1;
+                    }
+                }
+            });
+        });
+    });
+});
+</script>
+{% endblock %} 

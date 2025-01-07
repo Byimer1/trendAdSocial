@@ -1,0 +1,42 @@
+{% extends 'base/base.html' %}
+{% load crispy_forms_tags %}
+
+{% block title %}Log In - {{ block.super }}{% endblock %}
+
+{% block content %}
+<div class="container">
+    <div class="row justify-content-center">
+        <div class="col-md-5">
+            <div class="card">
+                <div class="card-body p-4">
+                    <h1 class="text-center brand-text mb-4">TrendAd Social</h1>
+                    
+                    <form method="post" novalidate>
+                        {% csrf_token %}
+                        {{ form|crispy }}
+                        
+                        <button type="submit" class="btn btn-primary w-100 mt-3">
+                            Log In
+                        </button>
+                    </form>
+                    
+                    <hr class="my-4">
+                    
+                    <div class="text-center">
+                        <a href="{% url 'users:password_reset' %}" class="text-muted text-decoration-none">
+                            Forgot password?
+                        </a>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="card mt-3">
+                <div class="card-body text-center">
+                    Don't have an account? 
+                    <a href="{% url 'users:register' %}" class="text-decoration-none">Sign up</a>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %} 

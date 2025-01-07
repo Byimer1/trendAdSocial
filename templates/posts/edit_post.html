@@ -1,0 +1,113 @@
+{% extends 'base/base.html' %}
+{% load static %}
+
+{% block title %}Edit Post - {{ block.super }}{% endblock %}
+
+{% block content %}
+<div class="container py-4">
+    <div class="row justify-content-center">
+        <div class="col-md-8">
+            <div class="card shadow-sm">
+                <div class="card-header bg-white py-3">
+                    <h5 class="mb-0">Edit Post</h5>
+                </div>
+                <div class="card-body">
+                    <form method="post" enctype="multipart/form-data">
+                        {% csrf_token %}
+                        
+                        <!-- Current Image Preview -->
+                        <div class="mb-4 text-center">
+                            <img src="{{ post.image.url }}" 
+                                 alt="Current post image" 
+                                 class="img-fluid rounded"
+                                 style="max-height: 400px; object-fit: contain;">
+                        </div>
+
+                        <!-- Image Field -->
+                        <div class="mb-3">
+                            <label for="{{ form.image.id_for_label }}" class="form-label">Change Image</label>
+                            <input type="file" 
+                                   name="{{ form.image.name }}" 
+                                   class="form-control {% if form.image.errors %}is-invalid{% endif %}"
+                                   id="{{ form.image.id_for_label }}"
+                                   accept="image/*">
+                            {% if form.image.errors %}
+                                <div class="invalid-feedback">
+                                    {{ form.image.errors|join:", " }}
+                                </div>
+                            {% endif %}
+                            <div class="form-text text-muted">
+                                Leave empty to keep the current image
+                            </div>
+                        </div>
+
+                        <!-- Caption Field -->
+                        <div class="mb-3">
+                            <label for="{{ form.caption.id_for_label }}" class="form-label">Caption</label>
+                            <textarea name="{{ form.caption.name }}" 
+                                      class="form-control {% if form.caption.errors %}is-invalid{% endif %}"
+                                      id="{{ form.caption.id_for_label }}"
+                                      rows="3"
+                                      placeholder="Write a caption...">{{ form.caption.value|default:'' }}</textarea>
+                            {% if form.caption.errors %}
+                                <div class="invalid-feedback">
+                                    {{ form.caption.errors|join:", " }}
+                                </div>
+                            {% endif %}
+                        </div>
+
+                        <!-- Location Field -->
+                        <div class="mb-4">
+                            <label for="{{ form.location.id_for_label }}" class="form-label">Location</label>
+                            <input type="text" 
+                                   name="{{ form.location.name }}" 
+                                   class="form-control {% if form.location.errors %}is-invalid{% endif %}"
+                                   id="{{ form.location.id_for_label }}"
+                                   value="{{ form.location.value|default:'' }}"
+                                   placeholder="Add location">
+                            {% if form.location.errors %}
+                                <div class="invalid-feedback">
+                                    {{ form.location.errors|join:", " }}
+                                </div>
+                            {% endif %}
+                        </div>
+
+                        <!-- Action Buttons -->
+                        <div class="d-flex justify-content-end gap-2">
+                            <a href="{% url 'posts:post_detail' post.id %}" class="btn btn-outline-secondary">
+                                Cancel
+                            </a>
+                            <button type="submit" class="btn btn-primary">
+                                Save Changes
+                            </button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Image Preview Script -->
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    const imageInput = document.getElementById('{{ form.image.id_for_label }}');
+    const imagePreview = document.querySelector('img');
+    const originalSrc = imagePreview.src;
+
+    imageInput.addEventListener('change', function() {
+        if (this.files && this.files[0]) {
+            const reader = new FileReader();
+            
+            reader.onload = function(e) {
+                imagePreview.src = e.target.result;
+            };
+            
+            reader.readAsDataURL(this.files[0]);
+        } else {
+            imagePreview.src = originalSrc;
+        }
+    });
+});
+</script>
+{% endblock %} 

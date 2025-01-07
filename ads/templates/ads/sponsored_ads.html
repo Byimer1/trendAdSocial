@@ -1,0 +1,24 @@
+{% extends 'base/base.html' %}
+
+{% block title %}Sponsored Ads - {{ block.super }}{% endblock %}
+
+{% block content %}
+<div class="container mt-4">
+    <h2 class="mb-4">Sponsored Ads</h2>
+    <div class="row">
+        {% for ad in ads %}
+        <div class="col-md-4 mb-4">
+            <div class="card">
+                <img src="{{ ad.image.url }}" class="card-img-top" alt="{{ ad.title }}">
+                <div class="card-body">
+                    <h5 class="card-title">{{ ad.title }}</h5>
+                    <p class="card-text">{{ ad.description }}</p>
+                    <p class="card-text"><strong>Price:</strong> ${{ ad.price }}</p>
+                    <a href="{% url 'ads:ad_detail' ad.pk %}" class="btn btn-primary">View Ad</a>
+                </div>
+            </div>
+        </div>
+        {% endfor %}
+    </div>
+</div>
+{% endblock %} 

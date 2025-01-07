@@ -1,0 +1,101 @@
+/* General Styles */
+body {
+    background-color: #fafafa;
+}
+
+/* Navbar Styles */
+.navbar {
+    background-color: white !important;
+    box-shadow: 0 1px 2px rgba(0, 0, 0, 0.1);
+}
+
+/* Card Styles */
+.card {
+    border: none;
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+}
+
+.card-img-top {
+    object-fit: cover;
+    height: 300px;
+}
+
+/* Profile Styles */
+.profile-header {
+    background-color: white;
+    padding: 2rem 0;
+    margin-bottom: 2rem;
+}
+
+.profile-avatar {
+    width: 150px;
+    height: 150px;
+    object-fit: cover;
+}
+
+/* Post Grid */
+.post-grid img {
+    aspect-ratio: 1;
+    object-fit: cover;
+    width: 100%;
+}
+
+/* Like and Save Buttons */
+.like-btn, .save-btn {
+    border: none;
+    background: none;
+    padding: 0.5rem;
+}
+
+.like-btn:hover, .save-btn:hover {
+    color: #dc3545;
+}
+
+/* Comments Section */
+.comments-section {
+    max-height: 300px;
+    overflow-y: auto;
+}
+
+/* Messages */
+.message-bubble {
+    max-width: 75%;
+    padding: 0.5rem 1rem;
+    border-radius: 1rem;
+    margin-bottom: 0.5rem;
+}
+
+.message-sent {
+    background-color: #0d6efd;
+    color: white;
+    margin-left: auto;
+}
+
+.message-received {
+    background-color: #e9ecef;
+}
+
+/* Notifications */
+.notification-item {
+    transition: background-color 0.3s;
+}
+
+.notification-item:hover {
+    background-color: #f8f9fa;
+}
+
+.notification-unread {
+    background-color: #e7f3ff;
+}
+
+/* Responsive Adjustments */
+@media (max-width: 768px) {
+    .card-img-top {
+        height: 250px;
+    }
+    
+    .profile-avatar {
+        width: 100px;
+        height: 100px;
+    }
+} 

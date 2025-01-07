@@ -1,0 +1,80 @@
+{% extends 'base/base.html' %}
+{% load static %}
+
+{% block title %}{{ ad.title }} - {{ block.super }}{% endblock %}
+
+{% block content %}
+<div class="container py-4">
+    <div class="row">
+        <!-- Ad Image -->
+        <div class="col-md-8 mb-4">
+            <div class="card">
+                <img src="{{ ad.image.url }}" 
+                     class="card-img-top"
+                     alt="{{ ad.title }}"
+                     style="max-height: 500px; object-fit: contain;">
+            </div>
+        </div>
+
+        <!-- Ad Details -->
+        <div class="col-md-4">
+            <div class="card">
+                <div class="card-body">
+                    <div class="d-flex justify-content-between align-items-start mb-3">
+                        <div>
+                            <h1 class="h3 mb-1">{{ ad.title }}</h1>
+                            <p class="text-muted mb-0">
+                                <i class="fas fa-map-marker-alt"></i> {{ ad.location|default:"No location" }}
+                            </p>
+                        </div>
+                        {% if ad.is_sponsored %}
+                            <span class="badge bg-success">Sponsored</span>
+                        {% endif %}
+                    </div>
+
+                    <h2 class="h4 text-primary mb-3">${{ ad.price }}</h2>
+
+                    <div class="mb-4">
+                        <h3 class="h5 mb-2">Description</h3>
+                        <p class="mb-0">{{ ad.description }}</p>
+                    </div>
+
+                    <div class="mb-4">
+                        <h3 class="h5 mb-2">Seller Information</h3>
+                        <div class="d-flex align-items-center">
+                            {% if ad.user.profile.avatar %}
+                                <img src="{{ ad.user.profile.avatar.url }}" 
+                                     alt="{{ ad.user.username }}" 
+                                     class="rounded-circle me-2"
+                                     width="40" height="40">
+                            {% else %}
+                                <img src="{% static 'img/default-avatar.svg' %}" 
+                                     alt="{{ ad.user.username }}" 
+                                     class="rounded-circle me-2"
+                                     width="40" height="40">
+                            {% endif %}
+                            <div>
+                                <a href="{% url 'users:profile' ad.user.username %}" class="text-decoration-none">
+                                    <h4 class="h6 mb-0">{{ ad.user.username }}</h4>
+                                </a>
+                                <small class="text-muted">Member since {{ ad.user.date_joined|date }}</small>
+                            </div>
+                        </div>
+                    </div>
+
+                    {% if ad.user == request.user %}
+                        <div class="d-grid gap-2">
+                            <a href="{% url 'ads:edit_ad' ad.id %}" class="btn btn-outline-primary">
+                                <i class="fas fa-edit"></i> Edit Ad
+                            </a>
+                            <a href="{% url 'ads:delete_ad' ad.id %}" class="btn btn-outline-danger">
+                                <i class="fas fa-trash"></i> Delete Ad
+                            </a>
+                        </div>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %} 

@@ -1,0 +1,86 @@
+{% extends 'base/base.html' %}
+{% load static %}
+
+{% block title %}My Ads - {{ block.super }}{% endblock %}
+
+{% block content %}
+<div class="container py-4">
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <h1 class="h3 mb-0">My Ads</h1>
+        <a href="{% url 'ads:create_ad' %}" class="btn btn-primary">
+            <i class="fas fa-plus"></i> Create New Ad
+        </a>
+    </div>
+
+    {% if ads %}
+        <div class="row row-cols-1 row-cols-md-2 row-cols-lg-3 g-4">
+            {% for ad in ads %}
+                <div class="col">
+                    <div class="card h-100">
+                        <img src="{{ ad.image.url }}" 
+                             class="card-img-top"
+                             alt="{{ ad.title }}"
+                             style="height: 200px; object-fit: cover;">
+                        <div class="card-body">
+                            <h5 class="card-title">{{ ad.title }}</h5>
+                            <p class="card-text text-muted mb-1">
+                                <i class="fas fa-map-marker-alt"></i> {{ ad.location|default:"No location" }}
+                            </p>
+                            <p class="card-text fw-bold text-primary mb-2">${{ ad.price }}</p>
+                            <p class="card-text">{{ ad.description|truncatechars:100 }}</p>
+                            {% if ad.is_sponsored %}
+                                <span class="badge bg-success mb-2">Sponsored</span>
+                            {% endif %}
+                        </div>
+                        <div class="card-footer bg-white border-top">
+                            <div class="btn-group w-100">
+                                <a href="{% url 'ads:ad_detail' ad.id %}" class="btn btn-outline-primary">
+                                    View
+                                </a>
+                                <a href="{% url 'ads:edit_ad' ad.id %}" class="btn btn-outline-secondary">
+                                    Edit
+                                </a>
+                                <a href="{% url 'ads:delete_ad' ad.id %}" class="btn btn-outline-danger">
+                                    Delete
+                                </a>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            {% endfor %}
+        </div>
+
+        {% if is_paginated %}
+            <nav aria-label="Page navigation" class="mt-4">
+                <ul class="pagination justify-content-center">
+                    {% if page_obj.has_previous %}
+                        <li class="page-item">
+                            <a class="page-link" href="?page={{ page_obj.previous_page_number }}">Previous</a>
+                        </li>
+                    {% endif %}
+                    
+                    {% for num in page_obj.paginator.page_range %}
+                        <li class="page-item {% if page_obj.number == num %}active{% endif %}">
+                            <a class="page-link" href="?page={{ num }}">{{ num }}</a>
+                        </li>
+                    {% endfor %}
+                    
+                    {% if page_obj.has_next %}
+                        <li class="page-item">
+                            <a class="page-link" href="?page={{ page_obj.next_page_number }}">Next</a>
+                        </li>
+                    {% endif %}
+                </ul>
+            </nav>
+        {% endif %}
+    {% else %}
+        <div class="text-center py-5">
+            <h3>You haven't created any ads yet</h3>
+            <p class="text-muted">Create your first ad to start selling!</p>
+            <a href="{% url 'ads:create_ad' %}" class="btn btn-primary">
+                <i class="fas fa-plus"></i> Create Ad
+            </a>
+        </div>
+    {% endif %}
+</div>
+{% endblock %} 

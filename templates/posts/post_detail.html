@@ -1,0 +1,289 @@
+{% extends 'base/base.html' %}
+{% load static %}
+
+{% block title %}{{ post.user.username }}'s Post - {{ block.super }}{% endblock %}
+
+{% block content %}
+<div class="container py-4">
+    <div class="row justify-content-center">
+        <div class="col-md-10">
+            <div class="card">
+                <div class="row g-0">
+                    <!-- Post Image -->
+                    <div class="col-md-8">
+                        <img src="{{ post.image.url }}" 
+                             class="img-fluid w-100 h-100"
+                             style="object-fit: cover;"
+                             style="max-height: 600px;"
+                             alt="Post image">
+                    </div>
+                    
+                    <!-- Post Details -->
+                    <div class="col-md-4">
+                        <div class="d-flex flex-column h-100">
+                            <!-- Post Header -->
+                            <div class="card-header bg-white border-0 py-3">
+                                <div class="d-flex align-items-center">
+                                    <a href="{% url 'users:profile' post.user.username %}" class="text-decoration-none">
+                                        {% if post.user.avatar %}
+                                            <img src="{{ post.user.avatar.url }}"
+                                                 class="rounded-circle me-2"
+                                                 width="32" height="32"
+                                                 alt="{{ post.user.username }}">
+                                        {% else %}
+                                            <img src="{% static 'img/default-avatar.svg' %}"
+                                                 class="rounded-circle me-2"
+                                                 width="32" height="32"
+                                                 alt="{{ post.user.username }}">
+                                        {% endif %}
+                                    </a>
+                                    <div>
+                                        <a href="{% url 'users:profile' post.user.username %}" class="text-dark text-decoration-none fw-bold">
+                                            {{ post.user.username }}
+                                        </a>
+                                        {% if post.location %}
+                                            <small class="text-muted d-block">{{ post.location }}</small>
+                                        {% endif %}
+                                    </div>
+                                    {% if post.user == request.user %}
+                                        <div class="dropdown ms-auto">
+                                            <button class="btn btn-link text-dark" type="button" data-bs-toggle="dropdown">
+                                                <i class="fas fa-ellipsis-h"></i>
+                                            </button>
+                                            <ul class="dropdown-menu">
+                                                <li>
+                                                    <a href="{% url 'posts:edit_post' post.id %}" class="dropdown-item">
+                                                        <i class="fas fa-edit me-2"></i>Edit Post
+                                                    </a>
+                                                </li>
+                                                <li>
+                                                    <button type="button" 
+                                                            class="dropdown-item text-danger" 
+                                                            data-bs-toggle="modal" 
+                                                            data-bs-target="#deletePostModal">
+                                                        <i class="fas fa-trash-alt me-2"></i>Delete Post
+                                                    </button>
+                                                </li>
+                                            </ul>
+                                        </div>
+                                    {% endif %}
+                                </div>
+                            </div>
+
+                            <!-- Post Content -->
+                            <div class="card-body">
+                                {% if post.caption %}
+                                    <p class="mb-3">{{ post.caption }}</p>
+                                {% endif %}
+                                
+                                <!-- Post Actions -->
+                                <div class="d-flex gap-3 mb-3">
+                                    <button class="btn btn-link text-dark p-0 like-button" 
+                                            data-post-id="{{ post.id }}"
+                                            data-liked="{% if request.user in post.likes.all %}true{% else %}false{% endif %}">
+                                        <i class="{% if request.user in post.likes.all %}fas{% else %}far{% endif %} fa-heart"></i>
+                                        <span class="likes-count">{{ post.likes_count }}</span>
+                                    </button>
+                                    <button class="btn btn-link text-dark p-0" onclick="focusComment()">
+                                        <i class="far fa-comment"></i>
+                                        <span class="comments-count">{{ post.comments_count }}</span>
+                                    </button>
+                                    <button class="btn btn-link text-dark p-0 ms-auto save-button"
+                                            data-post-id="{{ post.id }}"
+                                            data-saved="{% if request.user in post.saved_by.all %}true{% else %}false{% endif %}">
+                                        <i class="{% if request.user in post.saved_by.all %}fas{% else %}far{% endif %} fa-bookmark"></i>
+                                    </button>
+                                </div>
+
+                                <!-- Comments Section -->
+                                <div class="comments-section" style="max-height: 300px; overflow-y: auto;">
+                                    {% for comment in post.comments.all %}
+                                        <div class="comment mb-2" id="comment-{{ comment.id }}">
+                                            <div class="d-flex">
+                                                <a href="{% url 'users:profile' comment.user.username %}" class="text-decoration-none me-2">
+                                                    <strong class="text-dark">{{ comment.user.username }}</strong>
+                                                </a>
+                                                <p class="mb-1">{{ comment.text }}</p>
+                                                {% if comment.user == request.user %}
+                                                    <button class="btn btn-link text-danger p-0 ms-auto delete-comment"
+                                                            data-comment-id="{{ comment.id }}">
+                                                        <i class="fas fa-times"></i>
+                                                    </button>
+                                                {% endif %}
+                                            </div>
+                                            <small class="text-muted">{{ comment.created_at|timesince }} ago</small>
+                                        </div>
+                                    {% endfor %}
+                                </div>
+                            </div>
+
+                            <!-- Add Comment -->
+                            <div class="card-footer bg-white border-top mt-auto">
+                                <form class="comment-form" data-post-id="{{ post.id }}">
+                                    {% csrf_token %}
+                                    <div class="input-group">
+                                        <input type="text" 
+                                               class="form-control border-0" 
+                                               id="commentInput"
+                                               name="text"
+                                               placeholder="Add a comment..."
+                                               required>
+                                        <button type="submit" class="btn btn-link text-primary">Post</button>
+                                    </div>
+                                </form>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Delete Post Modal -->
+{% if post.user == request.user %}
+    <div class="modal fade" id="deletePostModal" tabindex="-1">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title">Delete Post</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                </div>
+                <div class="modal-body">
+                    <p>Are you sure you want to delete this post? This action cannot be undone.</p>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                    <form action="{% url 'posts:delete_post' post.id %}" method="post" class="d-inline">
+                        {% csrf_token %}
+                        <button type="submit" class="btn btn-danger">Delete</button>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+{% endif %}
+
+{% block extra_js %}
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    // Like functionality
+    document.querySelectorAll('.like-button').forEach(button => {
+        button.addEventListener('click', function() {
+            const postId = this.dataset.postId;
+            const liked = this.dataset.liked === 'true';
+            
+            fetch(`/posts/${postId}/like/`, {
+                method: 'POST',
+                headers: {
+                    'X-CSRFToken': document.querySelector('[name=csrfmiddlewaretoken]').value,
+                },
+            })
+            .then(response => response.json())
+            .then(data => {
+                this.dataset.liked = data.liked;
+                this.querySelector('i').className = data.liked ? 'fas fa-heart' : 'far fa-heart';
+                this.querySelector('.likes-count').textContent = data.likes_count;
+            });
+        });
+    });
+
+    // Save functionality
+    document.querySelectorAll('.save-button').forEach(button => {
+        button.addEventListener('click', function() {
+            const postId = this.dataset.postId;
+            const saved = this.dataset.saved === 'true';
+            
+            fetch(`/posts/${postId}/save/`, {
+                method: 'POST',
+                headers: {
+                    'X-CSRFToken': document.querySelector('[name=csrfmiddlewaretoken]').value,
+                },
+            })
+            .then(response => response.json())
+            .then(data => {
+                this.dataset.saved = data.saved;
+                this.querySelector('i').className = data.saved ? 'fas fa-bookmark' : 'far fa-bookmark';
+            });
+        });
+    });
+
+    // Comment functionality
+    document.querySelectorAll('.comment-form').forEach(form => {
+        form.addEventListener('submit', function(e) {
+            e.preventDefault();
+            const postId = this.dataset.postId;
+            const input = this.querySelector('input');
+            const text = input.value.trim();
+            
+            if (text) {
+                fetch(`/posts/${postId}/comment/`, {
+                    method: 'POST',
+                    headers: {
+                        'X-CSRFToken': document.querySelector('[name=csrfmiddlewaretoken]').value,
+                    },
+                    body: new FormData(this)
+                })
+                .then(response => response.json())
+                .then(data => {
+                    if (data.status === 'success') {
+                        const commentsSection = document.querySelector('.comments-section');
+                        const commentHtml = `
+                            <div class="comment mb-2" id="comment-${data.comment_id}">
+                                <div class="d-flex">
+                                    <a href="/users/${data.username}/" class="text-decoration-none me-2">
+                                        <strong class="text-dark">${data.username}</strong>
+                                    </a>
+                                    <p class="mb-1">${data.text}</p>
+                                    <button class="btn btn-link text-danger p-0 ms-auto delete-comment"
+                                            data-comment-id="${data.comment_id}">
+                                        <i class="fas fa-times"></i>
+                                    </button>
+                                </div>
+                                <small class="text-muted">just now</small>
+                            </div>
+                        `;
+                        commentsSection.insertAdjacentHTML('beforeend', commentHtml);
+                        input.value = '';
+                        
+                        // Update comment count
+                        const countElement = document.querySelector('.comments-count');
+                        countElement.textContent = parseInt(countElement.textContent) + 1;
+                    }
+                });
+            }
+        });
+    });
+
+    // Delete comment functionality
+    document.querySelectorAll('.delete-comment').forEach(button => {
+        button.addEventListener('click', function() {
+            const commentId = this.dataset.commentId;
+            
+            fetch(`/comment/${commentId}/delete/`, {
+                method: 'POST',
+                headers: {
+                    'X-CSRFToken': document.querySelector('[name=csrfmiddlewaretoken]').value,
+                },
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.status === 'success') {
+                    const comment = document.getElementById(`comment-${commentId}`);
+                    comment.remove();
+                    
+                    // Update comment count
+                    const countElement = document.querySelector('.comments-count');
+                    countElement.textContent = parseInt(countElement.textContent) - 1;
+                }
+            });
+        });
+    });
+});
+
+function focusComment() {
+    document.getElementById('commentInput').focus();
+}
+</script>
+{% endblock %}
+{% endblock %} 
