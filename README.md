@@ -17,7 +17,7 @@ A dynamic social media web application inspired by Instagram, designed for seaml
 - Like/Unlike posts
 - Comment on posts
 - Save posts for later
-- Explore page for discovering new content
+- Explore page for discovering new contents
 - Infinite scroll for better UX
 
 ### Direct Messages
