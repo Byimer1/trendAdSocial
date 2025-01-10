@@ -1,6 +1,6 @@
 # Biruk's SocialHub: Redefining Connection and Content Sharing
 
-A dynamic social media web application inspired by Instagram, designed for seamless user interaction and content sharing built with Django, featuring a clean and modern UI using Django templates and Bootstrap 5.
+A dynamic social media web application inspired by Instagram, designed for seamless user interaction and content sharing built with Django, featuring a clean and modern UI using Django templates and Bootstrap 5. 
 
 ## Features
 
