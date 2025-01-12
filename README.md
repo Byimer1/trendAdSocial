@@ -107,7 +107,7 @@ class Notification(models.Model):
 
 ## Project Structure
 ```
-bukisha/
+trendAdSocial/
 ├── manage.py
 ├── requirements.txt
 ├── .env
@@ -141,8 +141,8 @@ bukisha/
 1. **Setup Development Environment**
    ```bash
    # Clone repository
-   git clone https://github.com/yourusername/bukisha.git
-   cd bukisha
+   git clone https://github.com/yourusername/trendAdSocial.git
+   cd trendAdSocial
 
    # Create virtual environment
    python -m venv venv
