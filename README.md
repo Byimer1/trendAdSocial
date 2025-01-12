@@ -141,7 +141,7 @@ trendAdSocial/
 1. **Setup Development Environment**
    ```bash
    # Clone repository
-   git clone https://github.com/yourusername/trendAdSocial.git
+   git clone https://github.com/byimer1/trendAdSocial.git
    cd trendAdSocial
 
    # Create virtual environment
